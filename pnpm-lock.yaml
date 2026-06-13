@@ -18,6 +18,34 @@ importers:
         specifier: ^8.30.0
         version: 8.61.0(eslint@9.39.4)(typescript@5.9.3)
 
+  examples/app-router:
+    dependencies:
+      next:
+        specifier: ^15.3.0
+        version: 15.5.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      next-grecaptcha:
+        specifier: workspace:*
+        version: link:../../packages/next-grecaptcha
+      react:
+        specifier: ^19.0.0
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.0
+        version: 22.19.21
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.17)
+      typescript:
+        specifier: ^5.8.0
+        version: 5.9.3
+
   packages/next-grecaptcha:
     devDependencies:
       '@testing-library/react':
