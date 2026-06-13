@@ -119,4 +119,58 @@ describe("withRecaptcha (App Router)", () => {
     const req = new Request("http://test/api", { method: "POST", headers: { "x-recaptcha-token": "tok" } });
     await expect(handler(req, {})).rejects.toBeInstanceOf(RecaptchaConfigError);
   });
+
+  it("rethrows unknown errors from the handler", async () => {
+    const boom = new Error("database exploded");
+    const handler = withRecaptcha(
+      async () => {
+        throw boom;
+      },
+      { secretKey: "sec", fetch: fetchReturning(V3_OK) },
+    );
+    const req = new Request("http://test/api", { method: "POST", headers: { "x-recaptcha-token": "tok" } });
+    await expect(handler(req, {})).rejects.toThrow("database exploded");
+  });
+
+  it("leaves the request body readable by the handler after jsonField extraction", async () => {
+    let bodySeen: unknown;
+    const handler = withRecaptcha(
+      async (req) => {
+        bodySeen = await req.json();
+        return Response.json({ handled: true });
+      },
+      { secretKey: "sec", fetch: fetchReturning(V3_OK), tokenFrom: { jsonField: "captcha" } },
+    );
+    const req = new Request("http://test/api", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ captcha: "tok", payload: 42 }),
+    });
+    const res = await handler(req, {});
+    expect(res.status).toBe(200);
+    expect(bodySeen).toEqual({ captcha: "tok", payload: 42 });
+  });
+
+  it("returns 403 with RecaptchaActionMismatchError reason on action mismatch", async () => {
+    const handler = withRecaptcha(async () => Response.json({ handled: true }), {
+      secretKey: "sec",
+      fetch: fetchReturning(V3_OK), // action "login"
+      expectedAction: "signup",
+    });
+    const req = new Request("http://test/api", { method: "POST", headers: { "x-recaptcha-token": "tok" } });
+    const res = await handler(req, {});
+    expect(res.status).toBe(403);
+    expect((await res.json()).reason).toBe("RecaptchaActionMismatchError");
+  });
+
+  it("treats a whitespace-only header token as missing", async () => {
+    const handler = withRecaptcha(async () => Response.json({ handled: true }), {
+      secretKey: "sec",
+      fetch: fetchReturning(V3_OK),
+    });
+    const req = new Request("http://test/api", { method: "POST", headers: { "x-recaptcha-token": "   " } });
+    const res = await handler(req, {});
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "recaptcha-token-missing" });
+  });
 });

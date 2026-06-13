@@ -2,7 +2,10 @@ import { RecaptchaConfigError, RecaptchaError } from "../shared/errors";
 import type { RecaptchaVerifySuccess } from "../shared/types";
 import { assertRecaptcha, type AssertRecaptchaOptions } from "./assert";
 
-/** Where the wrapper looks for the client's token. Set exactly one property. */
+/**
+ * Where the wrapper looks for the client's token. Set exactly one property.
+ * When multiple fields are set, precedence is `jsonField` > `formField` > `header`.
+ */
 export interface TokenSource {
   /** Request header name. @default "x-recaptcha-token" */
   header?: string;
@@ -41,7 +44,7 @@ export async function extractTokenFromRequest(
       return null;
     }
   }
-  return req.headers.get(tokenFrom?.header ?? "x-recaptcha-token");
+  return req.headers.get(tokenFrom?.header ?? "x-recaptcha-token")?.trim() || null;
 }
 
 type RouteHandlerWithRecaptcha<C> = (
