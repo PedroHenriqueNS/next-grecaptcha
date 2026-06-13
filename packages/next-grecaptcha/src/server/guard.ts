@@ -1,0 +1,15 @@
+import { RecaptchaBrowserImportError } from "../shared/errors";
+
+/**
+ * Import-time guard for the `next-grecaptcha/server` entry. This entry handles
+ * the reCAPTCHA SECRET KEY and must never reach a browser bundle.
+ */
+export function assertServerEnvironment(): void {
+  if (typeof window !== "undefined") {
+    throw new RecaptchaBrowserImportError(
+      '"next-grecaptcha/server" was imported in a browser environment. ' +
+        "This entry point handles the reCAPTCHA secret key and must only run on the server " +
+        '(Route Handlers, API routes, Server Actions, middleware). For components and hooks, import from "next-grecaptcha/client".',
+    );
+  }
+}

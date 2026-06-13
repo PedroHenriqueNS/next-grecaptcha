@@ -12,7 +12,7 @@ const shared: Pick<Options, "format" | "dts" | "sourcemap" | "target" | "externa
 export default defineConfig([
   {
     ...shared,
-    entry: { index: "src/index.ts", v1: "src/v1.ts" },
+    entry: { index: "src/index.ts", server: "src/server/index.ts", v1: "src/v1.ts" },
   },
   {
     ...shared,
