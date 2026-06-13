@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RecaptchaVerificationError } from "../shared/errors";
+import { RecaptchaScoreError, RecaptchaVerificationError } from "../shared/errors";
 import { verifyRecaptchaAction } from "./verifyRecaptchaAction";
 
 const V3_OK = {
@@ -49,5 +49,15 @@ describe("verifyRecaptchaAction", () => {
     );
     expect(error).toBeInstanceOf(RecaptchaVerificationError);
     expect((error as RecaptchaVerificationError).errorCodes).toEqual(["missing-input-response"]);
+  });
+
+  it("forwards assert options like minScore to assertRecaptcha", async () => {
+    await expect(
+      verifyRecaptchaAction("tok", {
+        secretKey: "sec",
+        fetch: fetchReturning({ ...V3_OK, score: 0.3 }),
+        minScore: 0.5,
+      }),
+    ).rejects.toBeInstanceOf(RecaptchaScoreError);
   });
 });

@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { RecaptchaConfigError } from "../shared/errors";
 import { withRecaptchaApiRoute } from "./withRecaptchaApiRoute";
 
 const V3_OK = {
@@ -34,6 +35,10 @@ function fakeReqRes(init: { headers?: Record<string, string | string[]>; body?: 
 }
 
 describe("withRecaptchaApiRoute (Pages Router)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("verifies the header token and calls the handler with the result", async () => {
     const { req, res, sent } = fakeReqRes({ headers: { "x-recaptcha-token": "tok" } });
     const handler = withRecaptchaApiRoute(
@@ -88,6 +93,47 @@ describe("withRecaptchaApiRoute (Pages Router)", () => {
         response.status(200).json({ handled: true });
       },
       { secretKey: "sec", fetch: fetchReturning(V3_OK) },
+    );
+    await handler(req, res);
+    expect(sent.status).toBe(200);
+  });
+
+  it("rethrows unknown errors from the handler", async () => {
+    const { req, res } = fakeReqRes({ headers: { "x-recaptcha-token": "tok" } });
+    const handler = withRecaptchaApiRoute(
+      async () => {
+        throw new Error("database exploded");
+      },
+      { secretKey: "sec", fetch: fetchReturning(V3_OK) },
+    );
+    await expect(handler(req, res)).rejects.toThrow("database exploded");
+  });
+
+  it("rethrows RecaptchaConfigError when no secret is configured", async () => {
+    vi.stubEnv("RECAPTCHA_SECRET_KEY", "");
+    const { req, res } = fakeReqRes({ headers: { "x-recaptcha-token": "tok" } });
+    const handler = withRecaptchaApiRoute(async () => {}, { fetch: fetchReturning(V3_OK) });
+    await expect(handler(req, res)).rejects.toBeInstanceOf(RecaptchaConfigError);
+  });
+
+  it("responds 403 when the score is below the threshold", async () => {
+    const { req, res, sent } = fakeReqRes({ headers: { "x-recaptcha-token": "tok" } });
+    const handler = withRecaptchaApiRoute(async () => {}, {
+      secretKey: "sec",
+      fetch: fetchReturning({ ...V3_OK, score: 0.1 }),
+    });
+    await handler(req, res);
+    expect(sent.status).toBe(403);
+    expect((sent.json as { reason: string }).reason).toBe("RecaptchaScoreError");
+  });
+
+  it("extracts the token from req.body when formField is configured", async () => {
+    const { req, res, sent } = fakeReqRes({ body: { "g-recaptcha-response": "tok" } });
+    const handler = withRecaptchaApiRoute(
+      async (_req, response) => {
+        response.status(200).json({ handled: true });
+      },
+      { secretKey: "sec", fetch: fetchReturning(V3_OK), tokenFrom: { formField: "g-recaptcha-response" } },
     );
     await handler(req, res);
     expect(sent.status).toBe(200);

@@ -15,7 +15,7 @@ function extractTokenFromApiRequest(req: NextApiRequest, tokenFrom?: TokenSource
   const headerName = (tokenFrom?.header ?? "x-recaptcha-token").toLowerCase();
   const raw = req.headers[headerName];
   const value = Array.isArray(raw) ? raw[0] : raw;
-  return typeof value === "string" && value ? value : null;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
 type ApiRouteHandlerWithRecaptcha = (
