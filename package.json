@@ -1,0 +1,18 @@
+{
+  "name": "next-grecaptcha-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "pnpm --filter next-grecaptcha build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter next-grecaptcha test",
+    "lint": "eslint .",
+    "verify": "pnpm build && pnpm typecheck && pnpm test && pnpm --filter example-app-router build && node scripts/check-use-client.mjs",
+    "verify:pack": "node scripts/pack-smoke.mjs"
+  },
+  "devDependencies": {
+    "eslint": "^9.20.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.30.0"
+  },
+  "packageManager": "pnpm@11.6.0"
+}
