@@ -4,7 +4,7 @@
   "description": "Google reCAPTCHA v2 (checkbox + invisible) and v3 for Next.js. Own script loader, explicit rendering, typed siteverify client. Zero runtime dependencies.",
   "license": "MIT",
   "type": "module",
-  "files": ["dist"],
+  "files": ["dist", "!dist/**/*.map"],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
