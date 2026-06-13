@@ -3,6 +3,16 @@
   "version": "0.1.1",
   "description": "Google reCAPTCHA v2 (checkbox + invisible) and v3 for Next.js. Own script loader, explicit rendering, typed siteverify client. Zero runtime dependencies.",
   "license": "MIT",
+  "author": "Pedro Henrique",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PedroHenriqueNS/next-grecaptcha.git",
+    "directory": "packages/next-grecaptcha"
+  },
+  "bugs": {
+    "url": "https://github.com/PedroHenriqueNS/next-grecaptcha/issues"
+  },
+  "homepage": "https://github.com/PedroHenriqueNS/next-grecaptcha#readme",
   "type": "module",
   "files": ["dist", "!dist/**/*.map"],
   "main": "./dist/index.cjs",

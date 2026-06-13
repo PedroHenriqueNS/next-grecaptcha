@@ -1,0 +1,71 @@
+name: Publish to npm
+
+# Publishes packages/next-grecaptcha to npm when a GitHub Release is published,
+# or on a manual run. The job is gated by the "NPM Production" environment, which
+# must hold an NPM_TOKEN secret (an npm automation/granular token with publish
+# rights) and any approval/protection rules you configure.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+# Don't let two publishes race.
+concurrency:
+  group: publish-npm
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # required for npm provenance attestation
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: NPM Production
+      url: https://www.npmjs.com/package/next-grecaptcha
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4 # reads packageManager (pnpm@11.6.0) from package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify (build, typecheck, tests, example build, use-client check)
+        run: pnpm verify
+
+      - name: Pack smoke test (entry-point resolution under require + import)
+        run: pnpm verify:pack
+
+      - name: Resolve version and check if already published
+        id: meta
+        working-directory: packages/next-grecaptcha
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::$name@$version is already on npm — skipping publish."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Will publish $name@$version."
+          fi
+
+      - name: Publish to npm (with provenance)
+        if: steps.meta.outputs.published == 'false'
+        working-directory: packages/next-grecaptcha
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
