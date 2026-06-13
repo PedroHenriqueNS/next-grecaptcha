@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { renderHook, waitFor } from "@testing-library/react";
+import { StrictMode } from "react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RecaptchaActionNameError, RecaptchaConfigError } from "../shared/errors";
@@ -47,5 +48,27 @@ describe("useReCaptchaV3", () => {
     const { result } = renderHook(() => useReCaptchaV3());
     await expect(result.current.executeRecaptcha("login")).rejects.toBeInstanceOf(RecaptchaConfigError);
     expect(result.current.isReady).toBe(false);
+  });
+
+  it("executeRecaptcha resolves on the lazy path before isReady is set", async () => {
+    const { result } = renderHook(() => useReCaptchaV3(), { wrapper });
+    await expect(result.current.executeRecaptcha("signup")).resolves.toBe("v3-token-signup");
+  });
+
+  it("becomes ready and executes correctly under React Strict Mode", async () => {
+    const strictWrapper = ({ children }: { children: ReactNode }) => (
+      <StrictMode>
+        <ReCaptchaProvider v3SiteKey="V3KEY">{children}</ReCaptchaProvider>
+      </StrictMode>
+    );
+    const { result } = renderHook(() => useReCaptchaV3(), { wrapper: strictWrapper });
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    await expect(result.current.executeRecaptcha("login")).resolves.toBe("v3-token-login");
+  });
+
+  it("accepts action names with underscores", async () => {
+    const { result } = renderHook(() => useReCaptchaV3(), { wrapper });
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    await expect(result.current.executeRecaptcha("submit_form")).resolves.toBe("v3-token-submit_form");
   });
 });

@@ -16,13 +16,21 @@ export interface UseReCaptchaV3Result {
    * Runs a v3 assessment for the action and resolves with the token.
    * Action names may contain only A–Z, a–z, 0–9, slashes, and underscores.
    * Lazily loads the script if the provider has not loaded it yet.
+   * @throws {RecaptchaActionNameError} If the action name is empty or contains invalid characters.
+   * @throws {RecaptchaConfigError} If no v3 site key is available.
+   * @throws {RecaptchaLoadError} If the reCAPTCHA script fails to load on the lazy path.
    */
   executeRecaptcha: (action: string) => Promise<string>;
   /** True once the reCAPTCHA library is loaded and ready. */
   isReady: boolean;
 }
 
-/** React hook for Google reCAPTCHA v3 (score-based, no user interaction). */
+/**
+ * React hook for Google reCAPTCHA v3 (score-based, no user interaction).
+ * Reads the v3 site key from the nearest `<ReCaptchaProvider>` (`v3SiteKey`);
+ * `options.siteKey` overrides it when provided.
+ * @returns `{ executeRecaptcha, isReady }` — call `executeRecaptcha(action)` to obtain a token.
+ */
 export function useReCaptchaV3(options?: UseReCaptchaV3Options): UseReCaptchaV3Result {
   const config = useReCaptchaConfig();
   const siteKey = options?.siteKey ?? config.v3SiteKey;
