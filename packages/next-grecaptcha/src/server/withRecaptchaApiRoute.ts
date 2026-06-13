@@ -28,6 +28,20 @@ type ApiRouteHandlerWithRecaptcha = (
  * Pages Router equivalent of {@link withRecaptcha}: wraps an API route
  * handler, responding 400/403 JSON on missing token / failed verification and
  * passing the verification result as a third argument otherwise.
+ *
+ * **Token extraction (Pages Router):** `tokenFrom.jsonField` and
+ * `tokenFrom.formField` are interchangeable here — both read the same
+ * pre-parsed `req.body` that Next.js populates for JSON and
+ * `application/x-www-form-urlencoded` bodies. This requires Next's default
+ * body parser to be enabled; a route with `export const config = { api: {
+ * bodyParser: false } }` or a raw `multipart/form-data` body will not
+ * populate `req.body` and the token will not be found. The App Router
+ * {@link withRecaptcha} differs: it parses the JSON or form body itself.
+ *
+ * **403 response shape:** `{ error: "recaptcha-verification-failed", reason }`
+ * where `reason` is the failing error's class name (e.g.
+ * `"RecaptchaScoreError"`, `"RecaptchaVerificationError"`) — a stable value
+ * clients can switch on.
  */
 export function withRecaptchaApiRoute(
   handler: ApiRouteHandlerWithRecaptcha,

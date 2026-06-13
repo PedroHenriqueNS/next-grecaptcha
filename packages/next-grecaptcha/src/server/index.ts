@@ -16,3 +16,15 @@ export {
   verifyRecaptchaAction,
   type VerifyRecaptchaActionOptions,
 } from "./verifyRecaptchaAction";
+export {
+  RecaptchaError,
+  RecaptchaConfigError,
+  RecaptchaLoadError,
+  RecaptchaActionNameError,
+  RecaptchaVerificationError,
+  RecaptchaScoreError,
+  RecaptchaActionMismatchError,
+  RecaptchaHostnameError,
+  RecaptchaBrowserImportError,
+  RecaptchaV1Error,
+} from "../shared/errors";

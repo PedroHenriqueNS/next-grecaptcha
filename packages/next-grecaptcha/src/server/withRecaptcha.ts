@@ -58,6 +58,11 @@ type RouteHandlerWithRecaptcha<C> = (
  * otherwise calls the handler with the verification result attached to the
  * context. {@link RecaptchaConfigError} (server misconfiguration) is rethrown.
  *
+ * **403 response shape:** `{ error: "recaptcha-verification-failed", reason }`
+ * where `reason` is the failing error's class name (e.g.
+ * `"RecaptchaScoreError"`, `"RecaptchaVerificationError"`) — a stable value
+ * clients can switch on.
+ *
  * The returned function is typed `(req, ctx: unknown) => Promise<Response>` so
  * that it satisfies Next.js 15's generated route type-check (which requires the
  * second argument to be structurally compatible with `{ params: Promise<any> }`)
