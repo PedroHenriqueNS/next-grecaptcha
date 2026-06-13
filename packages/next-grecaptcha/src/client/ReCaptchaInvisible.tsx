@@ -27,6 +27,7 @@ export interface ReCaptchaInvisibleProps {
   tabIndex?: number;
   /** Widget language; falls back to the provider's `hl`. */
   hl?: string;
+  /** CSS class applied to the container `<div>`. */
   className?: string;
   /** Fired when a previously obtained token expires (~2 minutes). */
   onExpired?: () => void;
@@ -82,7 +83,7 @@ export const ReCaptchaInvisible = forwardRef<ReCaptchaInvisibleHandle, ReCaptcha
             "expired-callback": () => onExpiredRef.current?.(),
             "error-callback": () => {
               pendingRef.current?.reject(
-                new RecaptchaLoadError("reCAPTCHA reported an error during the invisible challenge."),
+                new RecaptchaError("reCAPTCHA reported an error during the invisible challenge."),
               );
               pendingRef.current = null;
             },
@@ -97,6 +98,7 @@ export const ReCaptchaInvisible = forwardRef<ReCaptchaInvisibleHandle, ReCaptcha
             error instanceof Error ? error : new RecaptchaLoadError("reCAPTCHA script failed to load."),
           );
           pendingRef.current = null;
+          readyWaitersRef.current = [];
         });
       return () => {
         cancelled = true;

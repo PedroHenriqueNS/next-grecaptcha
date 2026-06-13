@@ -67,4 +67,33 @@ describe("ReCaptchaInvisible", () => {
     await expectation;
     expect(mock.resetCalls).toContain(0);
   });
+
+  it("rejects a queued execute() when unmounted before the widget is ready", async () => {
+    const ref = createRef<ReCaptchaInvisibleHandle>();
+    const { unmount } = render(<ReCaptchaInvisible ref={ref} siteKey="K2" />);
+    const pending = ref.current!.execute(); // queued — widget not ready (loader resolves later)
+    const expectation = expect(pending).rejects.toThrow(/unmount/i);
+    act(() => unmount());
+    await expectation;
+  });
+
+  it("rejects a queued execute() when the script fails to load", async () => {
+    delete (window as { grecaptcha?: unknown }).grecaptcha;
+    __resetRecaptchaLoaderForTests();
+    const ref = createRef<ReCaptchaInvisibleHandle>();
+    render(<ReCaptchaInvisible ref={ref} siteKey="K2" />);
+    const pending = ref.current!.execute(); // queued before the (doomed) load resolves
+    const expectation = expect(pending).rejects.toThrow(/load/i);
+    const script = document.querySelector("script");
+    script!.dispatchEvent(new Event("error"));
+    await expectation;
+  });
+
+  it("calls onExpired when the widget token expires", async () => {
+    const onExpired = vi.fn();
+    render(<ReCaptchaInvisible siteKey="K2" onExpired={onExpired} />);
+    await waitFor(() => expect(mock.widgets).toHaveLength(1));
+    act(() => mock.widgets[0]!.params["expired-callback"]?.());
+    expect(onExpired).toHaveBeenCalledOnce();
+  });
 });
