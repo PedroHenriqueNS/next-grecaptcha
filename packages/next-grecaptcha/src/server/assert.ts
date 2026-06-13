@@ -49,6 +49,7 @@ export async function assertRecaptcha(
   if (options.expectedHostname !== undefined) {
     const expected =
       typeof options.expectedHostname === "string" ? [options.expectedHostname] : options.expectedHostname;
+    // Exact, case-sensitive match — Google siteverify returns lowercase hostnames.
     if (!expected.includes(result.hostname)) {
       throw new RecaptchaHostnameError(expected, result.hostname);
     }

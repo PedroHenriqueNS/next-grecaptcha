@@ -82,4 +82,25 @@ describe("assertRecaptcha", () => {
       assertRecaptcha("tok", { ...opts(V3_OK), expectedHostname: ["other.com", "example.com"] }),
     ).resolves.toBeTruthy();
   });
+
+  it("accepts a score exactly at the threshold", async () => {
+    // condition is `score < minScore`, so score === minScore must pass
+    await expect(assertRecaptcha("tok", opts({ ...V3_OK, score: 0.5 }))).resolves.toMatchObject({
+      score: 0.5,
+    });
+  });
+
+  it("does not enforce the action when expectedAction is not provided", async () => {
+    // V3_OK has action "login"; with no expectedAction, it must not throw
+    await expect(assertRecaptcha("tok", opts(V3_OK))).resolves.toMatchObject({ action: "login" });
+  });
+
+  it("accepts a single-string expectedHostname and rejects a mismatch", async () => {
+    await expect(
+      assertRecaptcha("tok", { ...opts(V3_OK), expectedHostname: "example.com" }),
+    ).resolves.toMatchObject({ hostname: "example.com" });
+    await expect(
+      assertRecaptcha("tok", { ...opts(V3_OK), expectedHostname: "other.com" }),
+    ).rejects.toBeInstanceOf(RecaptchaHostnameError);
+  });
 });
