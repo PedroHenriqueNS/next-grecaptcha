@@ -107,4 +107,30 @@ describe("verifyRecaptcha", () => {
     vi.stubEnv("RECAPTCHA_SECRET_KEY", "");
     await expect(verifyRecaptcha("tok")).rejects.toBeInstanceOf(RecaptchaConfigError);
   });
+
+  it("returns bad-request when a 200 response body is not valid JSON", async () => {
+    const fn = (async () =>
+      new Response("<html>not json</html>", {
+        status: 200,
+        headers: { "content-type": "text/html" },
+      })) as typeof fetch;
+    const result = await verifyRecaptcha("tok", { secretKey: "sec", fetch: fn });
+    expect(result).toEqual({ success: false, errorCodes: ["bad-request"] });
+  });
+
+  it("never includes the secret in a propagated error", async () => {
+    const SECRET = "SENTINEL-SECRET-DO-NOT-LEAK";
+    const throwingFetch = (async () => {
+      throw new Error("network down");
+    }) as typeof fetch;
+    let caught: unknown;
+    try {
+      await verifyRecaptcha("tok", { secretKey: SECRET, fetch: throwingFetch });
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).toBeInstanceOf(Error);
+    const serialized = `${(caught as Error).message}\n${(caught as Error).stack ?? ""}`;
+    expect(serialized).not.toContain(SECRET);
+  });
 });

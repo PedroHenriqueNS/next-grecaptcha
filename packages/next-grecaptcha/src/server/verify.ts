@@ -56,7 +56,14 @@ export async function verifyRecaptcha(
   if (!response.ok) {
     return { success: false, errorCodes: ["bad-request"] };
   }
-  const data = (await response.json()) as SiteverifyRawResponse;
+  let data: SiteverifyRawResponse;
+  try {
+    data = (await response.json()) as SiteverifyRawResponse;
+  } catch {
+    // A 200 with a non-JSON body (proxy/captive-portal interstitial) is not a
+    // valid siteverify response — treat it like a bad request rather than throwing.
+    return { success: false, errorCodes: ["bad-request"] };
+  }
   if (data.success) {
     return {
       success: true,
