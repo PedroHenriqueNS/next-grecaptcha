@@ -7,6 +7,7 @@ export interface ReCaptchaBadgeNoticeProps {
    * sentence "This site is protected by reCAPTCHA." @default true
    */
   withLinks?: boolean;
+  /** CSS class applied to the wrapping `<span>`. */
   className?: string;
 }
 
