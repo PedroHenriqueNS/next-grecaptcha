@@ -53,6 +53,7 @@ throws `RecaptchaBrowserImportError` at module evaluation time.
 | `next-grecaptcha` | Shared types, error classes, constants. No React, no secret handling. | Anywhere — client components, server components, API routes, middleware. |
 | `next-grecaptcha/client` | `"use client"` components and hooks: `ReCaptchaProvider`, `ReCaptchaCheckbox`, `ReCaptchaInvisible`, `useReCaptchaV3`, `ReCaptchaBadgeNotice`. | Client components and pages only. |
 | `next-grecaptcha/server` | Verification helpers: `verifyRecaptcha`, `assertRecaptcha`, `withRecaptcha`, `withRecaptchaApiRoute`, `verifyRecaptchaAction`. Throws if imported in a browser. | Server components, API routes, Server Actions, Pages Router API routes. |
+| `next-grecaptcha/v1` | Deprecation stub — throws `RecaptchaV1Error` on import (reCAPTCHA v1 was shut down in 2018). See *Why no v1?* below. | — |
 
 ---
 
@@ -265,7 +266,7 @@ export async function POST(req: Request): Promise<Response> {
 | `host` | `"google.com" \| "recaptcha.net"` | `"google.com"` | siteverify host. |
 | `remoteIp` | `string` | — | User's IP, forwarded as `remoteip`. |
 | `expectedAction` | `string` | — | Required v3 action; mismatch throws `RecaptchaActionMismatchError`. |
-| `minScore` | `number` | `0.5` | Minimum acceptable v3 score; failure throws `RecaptchaScoreError`. |
+| `minScore` | `number` | `0.5` | Minimum acceptable score. Only enforced when the response carries a score (i.e. v3 tokens); explicitly setting `minScore` also makes a score-less (v2) response throw `RecaptchaScoreError`. |
 | `expectedHostname` | `string \| readonly string[]` | — | Allowed hostname(s); mismatch throws `RecaptchaHostnameError`. |
 
 Google's documentation states: "By default, you can use a threshold of 0.5." The
