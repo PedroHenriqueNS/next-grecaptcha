@@ -99,4 +99,24 @@ describe("ReCaptchaCheckbox", () => {
   it("throws RecaptchaConfigError without a site key", () => {
     expect(() => render(<ReCaptchaCheckbox />)).toThrow(/site key/);
   });
+
+  it("resets the widget and clears the container on unmount", async () => {
+    const { container, unmount } = render(<ReCaptchaCheckbox siteKey="K2" />);
+    await waitFor(() => expect(mock.widgets).toHaveLength(1));
+    unmount();
+    expect(mock.resetCalls).toContain(0); // grecaptcha.reset(widgetId) was called
+    // container <div> had its children cleared via replaceChildren()
+    expect(container.querySelector("div")?.childElementCount ?? 0).toBe(0);
+  });
+
+  it("calls onErrored when the script fails to load", async () => {
+    delete (window as { grecaptcha?: unknown }).grecaptcha; // force a real script load
+    __resetRecaptchaLoaderForTests();
+    const onErrored = vi.fn();
+    render(<ReCaptchaCheckbox siteKey="K2" onErrored={onErrored} />);
+    // fire the injected script's error event — same technique as loader.test.ts
+    const script = document.querySelector("script");
+    script!.dispatchEvent(new Event("error"));
+    await waitFor(() => expect(onErrored).toHaveBeenCalledOnce());
+  });
 });

@@ -25,6 +25,7 @@ export interface ReCaptchaCheckboxProps {
   tabIndex?: number;
   /** Widget language; falls back to the provider's `hl`. */
   hl?: string;
+  /** CSS class applied to the container `<div>`. */
   className?: string;
   /** Fired with the response token when the user solves the challenge. */
   onToken?: (token: string) => void;
