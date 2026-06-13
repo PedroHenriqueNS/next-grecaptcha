@@ -9,6 +9,7 @@ export interface ReCaptchaConfig {
   siteKey?: string;
   /** v3 site key for useReCaptchaV3. */
   v3SiteKey?: string;
+  /** reCAPTCHA host domain. @default "google.com" — use `"recaptcha.net"` in regions where google.com is blocked. */
   host?: RecaptchaHost;
   /** Widget/badge language (`hl`). */
   hl?: string;
@@ -20,6 +21,9 @@ export interface ReCaptchaProviderProps extends ReCaptchaConfig {
   /**
    * Load the v3 script eagerly on mount when `v3SiteKey` is set (Google recommends
    * running v3 in the background of pages for analytics). @default true
+   * @remarks Once the reCAPTCHA v3 script has loaded, changing `v3SiteKey` has no effect
+   * because only one reCAPTCHA script is loaded per page; a full page reload is required
+   * to switch keys.
    */
   autoLoadV3?: boolean;
   children: ReactNode;
@@ -27,12 +31,23 @@ export interface ReCaptchaProviderProps extends ReCaptchaConfig {
 
 const ReCaptchaConfigContext = createContext<ReCaptchaConfig>({});
 
-/** Returns the nearest provider's config; empty object when there is no provider. */
+/**
+ * Returns the nearest provider's config; empty object when there is no provider.
+ * @example const { siteKey } = useReCaptchaConfig();
+ */
 export function useReCaptchaConfig(): ReCaptchaConfig {
   return useContext(ReCaptchaConfigContext);
 }
 
-/** Configures site keys, host, language, and CSP nonce for all descendants. */
+/**
+ * Configures site keys, host, language, and CSP nonce for all descendants.
+ * @example
+ * ```tsx
+ * <ReCaptchaProvider siteKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}>
+ *   <App />
+ * </ReCaptchaProvider>
+ * ```
+ */
 export function ReCaptchaProvider({
   siteKey,
   v3SiteKey,

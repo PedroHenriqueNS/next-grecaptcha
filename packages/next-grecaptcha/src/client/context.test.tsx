@@ -61,4 +61,18 @@ describe("ReCaptchaProvider", () => {
     );
     expect(document.querySelectorAll("script")).toHaveLength(0);
   });
+
+  it("updates the context value when props change", () => {
+    const { rerender } = render(
+      <ReCaptchaProvider siteKey="K2" autoLoadV3={false}>
+        <Probe />
+      </ReCaptchaProvider>,
+    );
+    rerender(
+      <ReCaptchaProvider siteKey="K2-NEW" autoLoadV3={false}>
+        <Probe />
+      </ReCaptchaProvider>,
+    );
+    expect(JSON.parse(screen.getByTestId("probe").textContent ?? "{}")).toEqual({ siteKey: "K2-NEW" });
+  });
 });
