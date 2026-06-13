@@ -11,3 +11,8 @@ export {
   type TokenSource,
   type WithRecaptchaOptions,
 } from "./withRecaptcha";
+export { withRecaptchaApiRoute } from "./withRecaptchaApiRoute";
+export {
+  verifyRecaptchaAction,
+  type VerifyRecaptchaActionOptions,
+} from "./verifyRecaptchaAction";
