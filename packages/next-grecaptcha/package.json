@@ -2,6 +2,22 @@
   "name": "next-grecaptcha",
   "version": "0.1.1",
   "description": "Google reCAPTCHA v2 (checkbox + invisible) and v3 for Next.js. Own script loader, explicit rendering, typed siteverify client. Zero runtime dependencies.",
+  "keywords": [
+    "recaptcha",
+    "google-recaptcha",
+    "grecaptcha",
+    "recaptcha-v2",
+    "recaptcha-v3",
+    "invisible-recaptcha",
+    "captcha",
+    "react",
+    "nextjs",
+    "next",
+    "app-router",
+    "server-actions",
+    "siteverify",
+    "typescript"
+  ],
   "license": "MIT",
   "author": "Pedro Henrique",
   "repository": {
@@ -62,6 +78,9 @@
     "./package.json": "./package.json"
   },
   "sideEffects": ["./dist/server.js", "./dist/server.cjs", "./dist/v1.js", "./dist/v1.cjs"],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsup",
     "typecheck": "tsc --noEmit",
